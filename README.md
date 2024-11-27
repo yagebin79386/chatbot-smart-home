@@ -2,9 +2,65 @@
 Create a chatbot to automatically collect the basic info and specific requirement from clients for creating a smart home solution, the chatbot can also help with general Q&A around this topic
 
 ##1. Convert the Decision Tree into Training Data
-Since you already have a clear decision tree, the next step is to transform it into a structured dataset that the model can learn from. Here’s how:
-###1.1 Create Dialogue Scenarios: Convert each path in your decision tree into a series of question-answer pairs or dialogue sequences that represent an ideal conversation flow.
-use the [generate_dialogue_template.py](https://github.com/yagebin79386/chatbot-smart-home/blob/357afb54df7613f55e4d610b32bd3be5b10078f7/generate_dialogue_template.py) to generate the dialogue template for general individual information in json formate.
+1.1 Firsty construct a clear decision tree based on scenarios for each smart system. 
+Here below are the scenarios for different smart systems:
+
+Smart lighting system:
+1 Sleep/Wake-Up 
+2 Security Enhancement
+3 Energy Efficiency
+4 Personalized Scenes
+5 Voice-Controlled Operation
+6 Health and Well-being
+7 Outdoor Safety
+8 Entertainment Sync
+
+Smart heating system:
+1. Scheduled Heating (attributes: Time Scheduling)
+2. Geo-Fencing (attributes: Location-Based Control)
+3. Zonal Heating (attributes: Room-Specific Control)
+4. Energy Monitoring (attributes: Usage Tracking)
+5. Voice Control (attributes: Voice Commands)
+6. Adaptive Learning (attributes: Self-Learning Adjustments)
+7. Weather Responsive (attributes: Weather-Adaptive Heating)
+
+Smart security system:
+1. Remote indoor Monitoring and Motion Detection
+2. Two-Way Communication and Smart Locks
+3. Integrated Alarms and Environmental Hazard Monitoring
+4. Package and Activity Monitoring
+5. Smart Lighting Integration
+6. Health Emergencies
+
+Smart AV(audio/video) system:
+1. Home Theater Experience
+2. Multi-Room Audio
+3. Video Conferencing
+4. Gaming
+5. Learning and Education
+6. Fitness and Health
+7. Accessibility Features
+8. Smart Alarms and Notifications
+
+Smart shutter system:
+1. Automated environment light control
+2. Privacy management
+3. Energy efficiency
+4. Sleep quality improvement
+5. Voice-controlled convenience
+
+Smart venting system:
+1. Automated Climate Control
+2. Air Quality Monitoring
+3. Energy Efficiency
+4. Integration with Smart Home Devices
+5. Scheduled Ventilation
+6. Safety Features
+7. Filter Maintenance
+
+1.2 The next step is to transform it into a structured conditional logical questionaire. Here’s how:
+Create Dialogue Scenarios: Convert each path in your decision tree into a series of question-answer pairs or dialogue sequences that represent an ideal conversation flow.
+use the [generate_dialogue_template.py](https://github.com/yagebin79386/chatbot-smart-home/blob/357afb54df7613f55e4d610b32bd3be5b10078f7/generate_dialogue_template.py) to generate the dialogue template for general individual information in json formate. 
 
 
 	• Include Relevant Q&A Data for Smart Home and IoT: Gather or create Q&A pairs about smart home and IoT topics to supplement the training data. This will help the model answer relevant questions it encounters during the conversation.
