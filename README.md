@@ -1,4 +1,4 @@
-# chatbot-smart-home
+# Chatbot-Smart-Home
 Create a chatbot to automatically collect the basic info and specific requirement from clients for creating a smart home solution, the chatbot can also help with general Q&A around this topic
 
 ##1. Convert the Decision Tree into Training Data
@@ -11,6 +11,16 @@ use the [generate_dialogue_template.py](https://github.com/yagebin79386/chatbot-
 	• Format Data for Training: Each dialogue can be represented as input-output pairs in a JSON or CSV format, such as:
 		○ Input: "User: I’m interested in setting up a smart thermostat. AI: Great! Do you already have any existing smart devices?"
 		○ Output: "User: Yes, I have a smart speaker."
+####Firstly the smart system related dialogue are generated seperating according to listed 6 different smart system:
+1: Smart Lighting System
+2: Smart Heating System
+3: Smart AV (Audio-Visual) System
+4: Smart security/surveillance system
+5: Smart Shade/Shutter System
+6: Smart Air/Venting System
+
+For each of the above system there is a conditional logical questionair based on the user's preference for use scenarios in that system. This has been done through seperate python script (please find in the main branch). For each questionair, based on the user's choice for scenario, the products and their choice for brands for legecy home appliances and systems, it will propose a final smart implementation plan for the chosen smart system. As well as 3 metrics of the total estiamted cost, the ecological rating as well as the installation complexity. 
+All those dialogues are output to a single json file called "smart_home_dialogues.json", that is reserved for later model fine-tuning.
 
 
 ##2. Fine-Tune GPT-2 with the Custom Dataset
