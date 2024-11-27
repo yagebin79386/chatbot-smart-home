@@ -1,0 +1,40 @@
+[
+    [
+        {
+            "role": "AI",
+            "text": "Please select the scenarios you are interested in (choose multiple):\n1. Scheduled Heating (attributes: Time Scheduling)\n2. Geo-Fencing (attributes: Location-Based Control)\n3. Zonal Heating (attributes: Room-Specific Control)\n4. Energy Monitoring (attributes: Usage Tracking)\n5. Voice Control (attributes: Voice Commands)\n6. Adaptive Learning (attributes: Self-Learning Adjustments)\n7. Weather Responsive (attributes: Weather-Adaptive Heating)"
+        },
+        {
+            "role": "User",
+            "text": "Adaptive Learning, Voice Control, Geo-Fencing"
+        },
+        {
+            "role": "AI",
+            "text": "Where do you want to install the smart heating system? (choose multiple spaces):\n1. Living Room\n2. Bedroom\n3. Kitchen\n4. Bathroom\n5. Office\n6. Hallway\n7. Indoor Garden"
+        },
+        {
+            "role": "User",
+            "text": "Bedroom, Bathroom"
+        },
+        {
+            "role": "AI",
+            "text": "In the Bedroom, how many heating units do you need?"
+        },
+        {
+            "role": "User",
+            "text": "4"
+        },
+        {
+            "role": "AI",
+            "text": "In the Bathroom, how many heating units do you need?"
+        },
+        {
+            "role": "User",
+            "text": "2"
+        },
+        {
+            "role": "AI",
+            "text": "============= Smart Heating Plan Summary =============\n\nScenarios Selected:\n  - Adaptive Learning\n  - Voice Control\n  - Geo-Fencing\n\nSpaces Configured:\n  - Bedroom: 4 units\n  - Bathroom: 2 units\n\nTechnical Requirements:\n  - Location-Based Control, Voice Commands, Self-Learning Adjustments\n\nTotal Estimated Cost: $250 - $380\nOverall Installation Complexity: 3.5/5\nEcological Rating: 3.7/5\n\n\u26a0\ufe0f Note: Installation costs are not included. Professional installation is recommended for complexity ratings above 3."
+        }
+    ]
+]
