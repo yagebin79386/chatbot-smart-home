@@ -86,47 +86,59 @@ def generate_general_dialogue():
 
 # Main function to run the chosen smart systems
 def smart_home_system(num_rounds=1, output_file="smart_home_dialogues.json"):
+    # Ensure the output file exists and load existing data
+    if os.path.exists(output_file):
+        with open(output_file, "r") as f:
+            existing_data = json.load(f)
+    else:
+        existing_data = []
+
     total_dialogues = 0  # To track the total dialogues generated
-    #all_dialogues = []  # To store all dialogues
 
     for round_num in range(num_rounds):
         print(f"Round {round_num + 1}: Simulating user choices...")
 
         # Generate general dialogue and get smart system preferences
         general_dialogue, preferred_systems = generate_general_dialogue()
-        round_dialogues = general_dialogue  # Start with general dialogue
-        if os.path.exists(output_file):
-            with open(output_file, "r") as f:
-                existing_data = json.load(f)
-        else:
-            existing_data = []
 
-        existing_data.extend(round_dialogues)
+        # Append the general dialogue to existing data
+        round_dialogues = general_dialogue
 
-        with open(output_file, "w") as f:
-            json.dump(existing_data, f, indent=4)
         # Generate dialogues for each preferred system
         for preferred_system in preferred_systems:
             preferred_system_index = next((key for key, value in smart_systems.items() if value["name"] == preferred_system), None)
             if preferred_system_index:
                 system_info = smart_systems[preferred_system_index]
+                system_dialogue = []
+
+                # Call the generator function or class method
                 if "function" in system_info:
                     # Call the corresponding generator function
-                    system_info["function"](num_samples=1, output_file=output_file)
+                    system_dialogue = system_info["function"](num_samples=1, output_file="smart_home_dialogues.json") or []
                 elif "class" in system_info:
                     # Call the corresponding class and method
                     instance = system_info["class"]()
-                    instance.generate_dataset_venting(num_samples=1, output_file=output_file)
+                    system_dialogue = instance.generate_dataset_venting(num_samples=1, output_file="smart_home_dialogues.json") or []
 
-        
-        #all_dialogues.extend(round_dialogues)  # Append this round's dialogues as a single block
+                # Extend round_dialogues with system dialogue
+                round_dialogues.extend(system_dialogue)
+
+        # Add the round's dialogues to the existing data
+        existing_data.append(round_dialogues)
+
+        # Write updated data back to the JSON file
+        with open(output_file, "w") as f:
+            json.dump(existing_data, f, indent=4)
+
         total_dialogues += len(preferred_systems)
-
         print(f"Round {round_num + 1} generated {len(preferred_systems)} dialogues for {', '.join(preferred_systems)}.\n")
+
     print(f"Total dialogues generated across {num_rounds} rounds: {total_dialogues}")
+
 
 # Run the program
 if __name__ == "__main__":
     # Specify the number of rounds (how many times the user will make random choices)
-    num_rounds = 5
+    num_rounds = 10
     smart_home_system(num_rounds=num_rounds, output_file="smart_home_dialogues.json")
+
