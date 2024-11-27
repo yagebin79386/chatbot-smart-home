@@ -19,7 +19,7 @@ use the [generate_dialogue_template.py](https://github.com/yagebin79386/chatbot-
 5: Smart Shade/Shutter System
 6: Smart Air/Venting System
 
-For each of the above system there is a conditional logical questionair based on the user's preference for use scenarios in that system. This has been done through seperate python script (please find in the main branch) but being triggered by simulated user dialogue logic which is in [main_dialogue.py](https://github.com/yagebin79386/chatbot-smart-home/blob/357afb54df7613f55e4d610b32bd3be5b10078f7/main_dialogue.py). For each questionair, based on the user's choice for scenario, the products and their choice for brands for legecy home appliances and systems, it will propose a final smart implementation plan for the chosen smart system. As well as 3 metrics of the total estiamted cost, the ecological rating as well as the installation complexity. 
+For each of the above system there is a conditional logical questionair based on the user's preference for use scenarios in that system. This has been done through seperate python script (please find in the main branch) but being triggered by simulated user dialogue logic which is in [main_dialogue.py](main_dialogue.py). For each questionair, based on the user's choice for scenario, the products and their choice for brands for legecy home appliances and systems, it will propose a final smart implementation plan for the chosen smart system. As well as 3 metrics of the total estiamted cost, the ecological rating as well as the installation complexity. 
 All those dialogues are output to a single json file called "smart_home_dialogues.json", that is reserved for later model fine-tuning.
 
 
