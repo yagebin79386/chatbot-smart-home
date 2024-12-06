@@ -100,7 +100,7 @@ def generate_dialogue():
 
     dialogue.append({
         "role": "AI",
-        "text": "Please select the scenarios you are interested in:"
+        "text": "Please select the scenarios you are interested in for smart Audio/Video system:"
     })
     dialogue.append({
         "role": "User",
@@ -306,9 +306,11 @@ def generate_dialogue():
 
     return dialogue
 
-def generate_dataset_AV(num_samples, output_file="smart_home_dialogues.json"):
+def generate_dataset_AV(num_samples):
     dataset = [generate_dialogue() for _ in range(num_samples)]
-    
+    return dataset
+
+def generate_json_AV(num_samples, output_file):
     #check if the file already exists
     if os.path.exists(output_file):
         # Load existing data from the file
@@ -319,6 +321,7 @@ def generate_dataset_AV(num_samples, output_file="smart_home_dialogues.json"):
         existing_data = []
 
     # Add the generated conversation to the dataset
+    dataset = generate_dataset_AV(num_samples)
     existing_data.extend(dataset)
 
     #Save the updated dateset to the JSON file
@@ -329,5 +332,4 @@ def generate_dataset_AV(num_samples, output_file="smart_home_dialogues.json"):
 
 
 if __name__ == "__main__":
-    generate_dataset_AV(3, output_file="smart_home_dialogues.json")
-    
+    generate_json_AV(num_samples=1, output_file="smart_home_dialogues.json")
