@@ -140,7 +140,7 @@ In order to fit the data for fine-tunning using fundamental model "Mistral serie
     print(f"Example from evaluation data: {eval_data['text'][0]}")
     
     return train_data, eval_data
-
+This part of the code together can be found in [reformat_train_eval_data.py](reformat_train_eval_data)
 
 
 ##4. Fine-Tune the Mistral model with synthesized Dataset
@@ -225,10 +225,13 @@ Train the Model:
 Start the fine-tuning process.
 trainer.train()
 
+This part of code is aggregated in script [Mistral_7B_fine_tune.py](Mistral_7B_fine_tune)
+
 ###4.6 Monitor Training
 Logs: Training metrics such as loss and evaluation accuracy are logged in TensorBoard. Run the following command to view them:
 tensorboard --logdir=./logs
 Checkpoints: The model checkpoints are saved in the smart_home_chatbot directory.
+
 
 ##5. Output
 After training, the fine-tuned model is saved and ready for deployment. The following files will be generated:
