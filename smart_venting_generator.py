@@ -27,7 +27,7 @@ class SmartAirSystem:
         self.processed_spaces = set()
         self.total_devices = 0
         self.conversation = []
-        self.all_conversations = []
+        self.dataset = []
 
     def random_choice(self, options, allow_multiple=False):
         if allow_multiple:
@@ -38,7 +38,7 @@ class SmartAirSystem:
         self.conversation.append({"role": role, "text": text})
     
     def ask_scenarios(self):
-        self.add_to_conversation("AI", "Which scenarios are you interested in? (Enter numbers separated by commas)")
+        self.add_to_conversation("AI", "Which scenarios are you interested in for smart air/venting system? (Enter numbers separated by commas)")
         self.add_to_conversation("AI", "1. Automated Climate Control\n2. Air Quality Monitoring\n3. Energy Efficiency\n"
               "4. Integration with Smart Home Devices\n5. Scheduled Ventilation\n"
               "6. Safety Features\n7. Filter Maintenance")
@@ -280,16 +280,7 @@ class SmartAirSystem:
         # Add the formatted summary as a single entry to the conversation
         self.add_to_conversation("AI", summary_text)
 
-    def generate_dataset_venting(self, num_samples, output_file="smart_home_dialogues.json"):
-        # Check if the file already exists
-        if os.path.exists(output_file):
-            # Load existing data from the file
-            with open(output_file, "r") as f:
-                existing_data = json.load(f)
-        else:
-            # If the file doesn't exist, initialize an empty list
-            existing_data = []
-
+    def generate_dataset_venting(self, num_samples):
         # Generate new dialogues and append them to the existing data
         for i in range(num_samples):
             self.space_objects = []  # Reset spaces for each simulation
@@ -324,18 +315,31 @@ class SmartAirSystem:
                     self.add_air_purifier()
             
             self.calculate_summary(scenarios)
-            self.all_conversations.extend(self.conversation)
-            
-            # Add the generated conversation to the dataset
-            existing_data.append(self.conversation)
+            self.dataset.extend(self.conversation)
+        return self.dataset
 
+    def generate_json_venting(self, num_samples, output_file):
+        # Check if the file already exists
+        if os.path.exists(output_file):
+            # Load existing data from the file
+            with open(output_file, "r") as f:
+                existing_data = json.load(f)
+        else:
+            # If the file doesn't exist, initialize an empty list
+            existing_data = []
+
+            # Add the generated conversation to the dataset
+            existing_data.append(self.dataset)
+        
         # Save the updated dataset to the JSON file
         with open(output_file, "w") as f:
             json.dump(existing_data, f, indent=4)
         
         print(f"Generated {num_samples} venting dialogues and saved to '{output_file}'.")
 
+if __name__ == "__main__":
+    system_air_dialogue = SmartAirSystem()
+    system_air_dialogue.generate_json_venting(num_samples=1, output_file="smart_home_dialogues.json")
 
 
-smart_air_system = SmartAirSystem()
-smart_air_system.generate_dataset_venting(num_samples=10)
+
