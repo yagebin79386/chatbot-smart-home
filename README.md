@@ -148,64 +148,65 @@ This part of the code together can be found in [reformat_train_eval_data.py](ref
 To fine-tune the Mistral-7B-Instruct model, the synthesized dataset from the previous step must be used. This dataset, structured into train_data.json and eval_data.json, contains flattened and formatted dialogues for causal language modeling.
 Here are the key steps:
 
-from datasets import load_dataset
+    from datasets import load_dataset
 
-train_dataset = load_dataset("json", data_files="output_data/train_data.json")["train"]
-eval_dataset = load_dataset("json", data_files="output_data/eval_data.json")["train"]
+    train_dataset = load_dataset("json", data_files="output_data/train_data.json")["train"]
+    eval_dataset = load_dataset("json", data_files="output_data/eval_data.json")["train"]
 
 ###4.2 Inspect the Dataset:
 Ensure the datasets are correctly loaded and formatted. Use the following snippet to check a sample:
 
-print(train_dataset[0])  # Check a single training example
-print(eval_dataset[0])   # Check a single evaluation example
+    print(train_dataset[0])  # Check a single training example
+    print(eval_dataset[0])   # Check a single evaluation example
 
 ###4.3 Configure Parameter-Efficient Fine-Tuning (PEFT)
 To fine-tune the model with minimal computational resources, the LoRA (Low-Rank Adaptation) technique is utilized. This approach modifies only a small number of model parameters while keeping the base model weights frozen, optimizing the fine-tuning process.
 Set LoRA Configuration:
 LoRA is configured to update specific target modules in the model.
-from peft import LoraConfig, get_peft_model
+    
+    from peft import LoraConfig, get_peft_model
 
-config = LoraConfig(
-    r=16,
-    lora_alpha=32,
-    target_modules=[
-        "q_proj", "k_proj", "v_proj", "o_proj",
-        "gate_proj", "up_proj", "down_proj", "lm_head",
-    ],
-    bias="none",
-    lora_dropout=0.1,
-    task_type="CAUSAL_LM",  # Task type for causal language modeling
-)
+    config = LoraConfig(
+        r=16,
+        lora_alpha=32,
+        target_modules=[
+            "q_proj", "k_proj", "v_proj", "o_proj",
+            "gate_proj", "up_proj", "down_proj", "lm_head",
+        ],
+        bias="none",
+        lora_dropout=0.1,
+        task_type="CAUSAL_LM",  # Task type for causal language modeling
+    )
 
-model = get_peft_model(model, config)
-Enable Gradient Checkpointing:
-Reduces memory usage during training.
-model.gradient_checkpointing_enable()
+    model = get_peft_model(model, config)
+    Enable Gradient Checkpointing:
+    Reduces memory usage during training.
+    model.gradient_checkpointing_enable()
 
 ###4.4 Define Training Arguments
 The TrainingArguments class from transformers is used to configure the fine-tuning process. Key parameters include batch sizes, learning rate, evaluation strategy, and the number of epochs.
 from transformers import TrainingArguments
 
-args = TrainingArguments(
-    output_dir="smart_home_chatbot",  # Directory to save model checkpoints
-    overwrite_output_dir=True,
-    logging_dir="./logs",             # Directory for logs
-    logging_steps=50,                 # Log interval
-    evaluation_strategy="steps",      # Evaluate at regular intervals
-    eval_steps=500,                   # Interval for evaluation
-    save_steps=500,                   # Interval for saving checkpoints
-    save_total_limit=1,               # Retain only the latest checkpoint
-    num_train_epochs=3,               # Number of epochs
-    per_device_eval_batch_size=4,     # Evaluation batch size
-    per_device_train_batch_size=4,    # Training batch size
-    gradient_accumulation_steps=32,   # Accumulate gradients over several steps
-    learning_rate=1e-4,               # Learning rate
-    optim="adamw_8bit",               # Optimizer with 8-bit weights
-    fp16=True,                        # Use 16-bit floating-point precision
-    report_to=["tensorboard"],        # Report training metrics to TensorBoard
-    dataloader_pin_memory=True,
-    tf32=True                         # Enable TF32 on NVIDIA GPUs
-)
+    args = TrainingArguments(
+        output_dir="smart_home_chatbot",  # Directory to save model checkpoints
+        overwrite_output_dir=True,
+        logging_dir="./logs",             # Directory for logs
+        logging_steps=50,                 # Log interval
+        evaluation_strategy="steps",      # Evaluate at regular intervals
+        eval_steps=500,                   # Interval for evaluation
+        save_steps=500,                   # Interval for saving checkpoints
+        save_total_limit=1,               # Retain only the latest checkpoint
+        num_train_epochs=3,               # Number of epochs
+        per_device_eval_batch_size=4,     # Evaluation batch size
+        per_device_train_batch_size=4,    # Training batch size
+        gradient_accumulation_steps=32,   # Accumulate gradients over several steps
+        learning_rate=1e-4,               # Learning rate
+        optim="adamw_8bit",               # Optimizer with 8-bit weights
+        fp16=True,                        # Use 16-bit floating-point precision
+        report_to=["tensorboard"],        # Report training metrics to TensorBoard
+        dataloader_pin_memory=True,
+        tf32=True                         # Enable TF32 on NVIDIA GPUs
+    )
 
 ###4.5 Initialize the Trainer and Start Fine-Tuning
 The SFTTrainer from trl (transformers reinforcement learning) is used for fine-tuning. This library is optimized for tasks like causal language modeling.
@@ -213,33 +214,35 @@ Initialize the Trainer:
 Configure the trainer with the model, training arguments, and datasets.
 from trl import SFTTrainer
 
-trainer = SFTTrainer(
-    model=model,
-    args=args,
-    train_dataset=train_dataset,
-    max_seq_length=256,          # Maximum sequence length
-    dataset_text_field="text",   # Text field in the dataset
-    eval_dataset=eval_dataset
-)
+    trainer = SFTTrainer(
+        model=model,
+        args=args,
+        train_dataset=train_dataset,
+        max_seq_length=256,          # Maximum sequence length
+        dataset_text_field="text",   # Text field in the dataset
+        eval_dataset=eval_dataset
+    )
 Train the Model:
 Start the fine-tuning process.
-trainer.train()
+
+    trainer.train()
 
 This part of code is aggregated in script [Mistral_7B_fine_tune.py](Mistral_7B_fine_tune)
 
 ###4.6 Monitor Training
 Logs: Training metrics such as loss and evaluation accuracy are logged in TensorBoard. Run the following command to view them:
-tensorboard --logdir=./logs
-Checkpoints: The model checkpoints are saved in the smart_home_chatbot directory.
+
+    tensorboard --logdir=./logs
+    Checkpoints: The model checkpoints are saved in the smart_home_chatbot directory.
 
 
 ##5. Output
 After training, the fine-tuned model is saved and ready for deployment. The following files will be generated:
 
-adapter_model = trainer.model
-merged_model = adapter_model.merge_and_unload()
+    adapter_model = trainer.model
+    merged_model = adapter_model.merge_and_unload()
 
-trained_tokenizer = trainer.tokenizer
+    trained_tokenizer = trainer.tokenizer
 
 Fine-tuned model weights in smart_home_chatbot/.
 Logs for monitoring training progress.
