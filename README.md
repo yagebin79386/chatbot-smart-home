@@ -1,9 +1,9 @@
 # Chatbot-Smart-Home
-Create a chatbot to automatically collect the basic info and specific requirement from clients for creating a smart home solution, the chatbot can also help with general Q&A around this topic
+Create a chatbot to automatically consult the user over setting up their smart home system. Based on the dempgraphic and preference questions for user the chatbot will help to create a smart home solution inlcuding the necessary smart devices as well the estimated purchase cost and installation complexity and ecological score.
 
 ##1. Convert the Decision Tree into Training Data
-1.1 Firsty construct a clear decision tree based on scenarios for each smart system. 
-Here below are the scenarios for different smart systems:
+1.1 Firsty construct a survey logic (decision tree) based on use scenarios for each smart system. 
+Here below are the scenarios and the composed interactive python script for different smart systems:
 
 Smart lighting system:
 1 Sleep/Wake-Up 
@@ -14,6 +14,7 @@ Smart lighting system:
 6 Health and Well-being
 7 Outdoor Safety
 8 Entertainment Sync
+[smart_lighting.py](smart_lighting.py)
 
 Smart heating system:
 1. Scheduled Heating (attributes: Time Scheduling)
