@@ -1,0 +1,66 @@
+from datasets import Dataset
+import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+
+#load the dataset
+import json
+
+dataset = None
+
+
+def flatten_data(input_file):
+    with open(input_file, "r") as f:
+        data = json.load(f)
+
+    # Flatten the data if it's nested (as seen in your dataset)
+    flattened_data = [turn for conversation in data for turn in conversation if isinstance(conversation, list)]
+    return flattened_data
+
+def extract_dialogues(data):
+    processed_data = []
+    def recursive_extraction(entry):
+        if isinstance(entry, dict):
+            processed_data.append(entry)
+        elif isinstance(entry, list):
+            for sub_entry in entry:
+                recursive_extraction(sub_entry)
+    recursive_extraction(data)
+    return processed_data
+
+
+# Use the
+def format_prompts(examples):
+    return {
+        "text": [
+            f"{role}: {text}" for role, text in zip(examples["role"], examples["text"])
+        ]
+    }
+
+# Apply formatting
+def reformat_and_split(input_file, output_dir, test_size=.2, seed=42):
+    global dataset  # Declare that we're modifying the global variable
+    flattened_data = flatten_data(input_file)
+    processed_data = extract_dialogues(flattened_data)
+
+    dataset = Dataset.from_dict({
+    "role": [entry["role"] for entry in processed_data],
+    "text": [entry["text"] for entry in processed_data]
+    })
+    dataset = dataset.map(format_prompts, batched=True)
+
+    # Split the dataset into training and evaluation sets
+    split_data = dataset.train_test_split(test_size=test_size, seed=seed)
+    train_data = split_data["train"]
+    eval_data = split_data["test"]
+
+    # Save the split datasets
+    train_output_path = os.path.join(output_dir, "train_data.json")
+    eval_output_path = os.path.join(output_dir, "eval_data.json")
+
+    train_data.to_json(train_output_path)
+    eval_data.to_json(eval_output_path)
+
+    print(f"Example from training data: {train_data['text'][0]}")
+    print(f"Example from evaluation data: {eval_data['text'][0]}")
+
+    return train_data, eval_data
