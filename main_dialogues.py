@@ -6,12 +6,21 @@ import json
 os.chdir("/Users/rickytan/Virtual_Machines/Ubuntu")
 
 # Import smart home system functions and classes
+#heating
 from smart_heating_generator import generate_dataset_heating
+from smart_heating import heating_decision_tree, calculate_cost_complexity_ecology
+#lighting
 from smart_lighting_generator import generate_dataset_light
+from smart_lighting import decision_tree, generate_random_response, calculate_cost_complexity_ecology
+#AV
 from smart_AV_generator import generate_dataset_AV
+#security
 from smart_security_generator import generate_dataset_security
+#shutter
 from smart_shutter_generator import generate_dataset_shutter
+#venting
 from smart_venting_generator import SmartAirSystem
+
 
 # Define smart system choices
 smart_systems = {
@@ -85,7 +94,7 @@ def generate_general_dialogue():
     return dialogue, smart_system_choices
 
 # Main function to run the chosen smart systems
-def smart_home_system(num_rounds=1, output_file="smart_home_dialogues.json"):
+def smart_home_system(num_rounds, output_file):
     # Ensure the output file exists and load existing data
     if os.path.exists(output_file):
         with open(output_file, "r") as f:
@@ -114,11 +123,11 @@ def smart_home_system(num_rounds=1, output_file="smart_home_dialogues.json"):
                 # Call the generator function or class method
                 if "function" in system_info:
                     # Call the corresponding generator function
-                    system_dialogue = system_info["function"](num_samples=1, output_file="smart_home_dialogues.json") or []
+                    system_dialogue = system_info["function"](num_samples=1) or []
                 elif "class" in system_info:
                     # Call the corresponding class and method
                     instance = system_info["class"]()
-                    system_dialogue = instance.generate_dataset_venting(num_samples=1, output_file="smart_home_dialogues.json") or []
+                    system_dialogue = instance.generate_dataset_venting(num_samples=1) or []
 
                 # Extend round_dialogues with system dialogue
                 round_dialogues.extend(system_dialogue)
@@ -139,6 +148,5 @@ def smart_home_system(num_rounds=1, output_file="smart_home_dialogues.json"):
 # Run the program
 if __name__ == "__main__":
     # Specify the number of rounds (how many times the user will make random choices)
-    num_rounds = 10
-    smart_home_system(num_rounds=num_rounds, output_file="smart_home_dialogues.json")
+    smart_home_system(num_rounds=200, output_file="smart_home_dialogues_final.json")
 
