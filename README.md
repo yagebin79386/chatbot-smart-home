@@ -234,9 +234,3 @@ Logs for monitoring training progress.
 The final trained model can now be used for downstream tasks like answering queries or generating responses for smart home systems.
 
 
-##4. Combine with Retrieval-Augmented Generation (RAG) for Domain Knowledge
-To handle domain-specific queries about smart home and IoT:
-	• Add a Retrieval Component: Use a RAG pipeline, where the model can query a knowledge base for smart home/IoT information. This can be implemented with an open-source solution like Haystack or by integrating a document search API to retrieve relevant information.
-	• Hybrid Pipeline: Combine the decision-tree-guided questioning with RAG-based answering. When a client asks a general question, the model can retrieve relevant information and provide a well-informed response.
-![image](https://github.com/user-attachments/assets/48c2d7d1-d16d-4e7b-b064-3d3523dac571)
-
