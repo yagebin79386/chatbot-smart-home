@@ -58,15 +58,10 @@ Smart venting system:
 6. Safety Features
 7. Filter Maintenance
 
-1.2 The next step is to transform it into a structured conditional logical questionaire. Here’s how:
-Create Dialogue Scenarios: Convert each path in your decision tree into a series of question-answer pairs or dialogue sequences that represent an ideal conversation flow.
-use the [generate_dialogue_template.py](https://github.com/yagebin79386/chatbot-smart-home/blob/357afb54df7613f55e4d610b32bd3be5b10078f7/generate_dialogue_template.py) to generate the dialogue template for general individual information in json formate. 
+1.2 The next step is to transform it into a structured conditional logical questionaire. 
+Create Dialogue Scenarios: For each of the smart system scenario like listed above, create a decision tree containing the conditional logical questions which necessites the configuration.
 
 
-	• Include Relevant Q&A Data for Smart Home and IoT: Gather or create Q&A pairs about smart home and IoT topics to supplement the training data. This will help the model answer relevant questions it encounters during the conversation.
-	• Format Data for Training: Each dialogue can be represented as input-output pairs in a JSON or CSV format, such as:
-		○ Input: "User: I’m interested in setting up a smart thermostat. AI: Great! Do you already have any existing smart devices?"
-		○ Output: "User: Yes, I have a smart speaker."
 ####Firstly the smart system related dialogue are generated seperating according to listed 6 different smart system:
 1: Smart Lighting System
 2: Smart Heating System
@@ -75,21 +70,168 @@ use the [generate_dialogue_template.py](https://github.com/yagebin79386/chatbot-
 5: Smart Shade/Shutter System
 6: Smart Air/Venting System
 
-For each of the above system there is a conditional logical questionair based on the user's preference for use scenarios in that system. This has been done through seperate python script (please find in the main branch) but being triggered by simulated user dialogue logic which is in [main_dialogue.py](main_dialogue.py). For each questionair, based on the user's choice for scenario, the products and their choice for brands for legecy home appliances and systems, it will propose a final smart implementation plan for the chosen smart system. As well as 3 metrics of the total estiamted cost, the ecological rating as well as the installation complexity. 
-All those dialogues are output to a single json file called "smart_home_dialogues.json", that is reserved for later model fine-tuning.
+At the beginning of the dialogue, the general preferene questions and the dempgraphic question as well as their legacy system are solicited. After that the user are asked for their interested smart system. 
+Based on their choice of smart systems, a set of conditional logical questions structured on the usage scenarios of that system is created. This has been done through seperate python script (please find in the main branch) but being triggered by simulated user dialogue logic which is in [main_dialogue.py](main_dialogue.py). 
+For each questionair, based on the user's choice for scenarios, their household dimension and their personal tastes for home appliances and systems, it will propose a final smart implementation plan for the chosen smart system. As well as 3 metrics of the total estiamted cost, the ecological rating as well as the installation complexity. 
+All those dialogues are output to a single json file called "smart_home_dialogues.json", that is reserved for later reformatting and model fine-tuning.
+
+##2. Format Data for Training: Each json file contains moltipal of dialogues, which are generated through random simulation (using random library). Each dialogue is comprise of the above elaborated content but with nested list structure also with assiging the question the role "AI" and the answer the role "User".
+In order to fit the data for fine-tunning using fundamental model "Mistral series":
+###2.1. Flattened the data to remove the nested structure:
+   def flatten_data(input_file):
+    with open(input_file, "r") as f:
+        data = json.load(f)
+
+    # Flatten the data if it's nested (as seen in your dataset)
+    flattened_data = [turn for conversation in data for turn in conversation if isinstance(conversation, list)]
+    return flattened_data
+###2.2. Furthur transfer the class lists into the disctionary
+   def extract_dialogues(data):
+    processed_data = []
+    def recursive_extraction(entry):
+        if isinstance(entry, dict):
+            processed_data.append(entry) 
+        elif isinstance(entry, list):
+            for sub_entry in entry:
+                recursive_extraction(sub_entry)   
+    recursive_extraction(data)
+    return processed_data
+###2.3. Reassign each line the Mistral given key name:
+   def format_prompts(examples):
+    return {
+        "text": [
+            f"{role}: {text}" for role, text in zip(examples["role"], examples["text"])
+        ]
+    } 
+###2.4. Nest all processing procedure together to generate dataset and divide that using "dataset" library into training and evaluation dataset;
+   def reformat_and_split(input_file, output_dir, test_size=.2, seed=42): 
+    global dataset  # Declare that we're modifying the global variable
+    flattened_data = flatten_data(input_file)   
+    processed_data = extract_dialogues(flattened_data)
+    
+    dataset = Dataset.from_dict({
+    "role": [entry["role"] for entry in processed_data],
+    "text": [entry["text"] for entry in processed_data]
+    })
+    dataset = dataset.map(format_prompts, batched=True)
+
+    # Split the dataset into training and evaluation sets
+    split_data = dataset.train_test_split(test_size=test_size, seed=seed)
+    train_data = split_data["train"]
+    eval_data = split_data["test"]
+
+    # Save the split datasets
+    train_output_path = os.path.join(output_dir, "train_data.json")
+    eval_output_path = os.path.join(output_dir, "eval_data.json")
+    
+    train_data.to_json(train_output_path)
+    eval_data.to_json(eval_output_path)
+  
+    print(f"Example from training data: {train_data['text'][0]}")
+    print(f"Example from evaluation data: {eval_data['text'][0]}")
+    
+    return train_data, eval_data
 
 
-##2. Fine-Tune GPT-2 with the Custom Dataset
-Once the dataset is ready, you can proceed with fine-tuning the model:
-	• Prepare the Training Environment: Use libraries like Hugging Face’s Transformers, which make it easy to fine-tune models with custom datasets. Install the necessary libraries and set up your environment.
-	• Tokenize the Data: Preprocess the dataset by tokenizing the text to prepare it for training. The Transformers library has tokenizers that work well with GPT-2.
-	• Fine-Tune the Model: Use the Trainer API in Hugging Face to fine-tune GPT-2 on your dataset. Set appropriate training parameters like batch size, learning rate, and number of epochs to optimize performance. Monitor training to avoid overfitting.
 
+##3. Fine-Tune the Mistral model with synthesized Dataset
+1 Prepare the Dataset for Fine-Tuning
+To fine-tune the Mistral-7B-Instruct model, the synthesized dataset from the previous step must be used. This dataset, structured into train_data.json and eval_data.json, contains flattened and formatted dialogues for causal language modeling.
+Here are the key steps:
 
-##3. Implement the Decision Tree Logic in Post-Processing
-LLMs may not always follow strict decision paths, so you can enhance control by implementing the decision tree as a post-processing layer:
-	• Custom Logic Layer: Wrap the model’s outputs in custom logic that enforces the decision tree. For instance, after each response, check the user’s answer and decide the next question based on your decision tree.
-	• Dynamic Question Flow: Based on the response, dynamically adjust the next question rather than relying entirely on the model. This ensures that the decision tree structure is strictly followed.
+from datasets import load_dataset
+
+train_dataset = load_dataset("json", data_files="output_data/train_data.json")["train"]
+eval_dataset = load_dataset("json", data_files="output_data/eval_data.json")["train"]
+
+2 Inspect the Dataset:
+Ensure the datasets are correctly loaded and formatted. Use the following snippet to check a sample:
+
+print(train_dataset[0])  # Check a single training example
+print(eval_dataset[0])   # Check a single evaluation example
+
+###3.2 Configure Parameter-Efficient Fine-Tuning (PEFT)
+To fine-tune the model with minimal computational resources, the LoRA (Low-Rank Adaptation) technique is utilized. This approach modifies only a small number of model parameters while keeping the base model weights frozen, optimizing the fine-tuning process.
+Set LoRA Configuration:
+LoRA is configured to update specific target modules in the model.
+from peft import LoraConfig, get_peft_model
+
+config = LoraConfig(
+    r=16,
+    lora_alpha=32,
+    target_modules=[
+        "q_proj", "k_proj", "v_proj", "o_proj",
+        "gate_proj", "up_proj", "down_proj", "lm_head",
+    ],
+    bias="none",
+    lora_dropout=0.1,
+    task_type="CAUSAL_LM",  # Task type for causal language modeling
+)
+
+model = get_peft_model(model, config)
+Enable Gradient Checkpointing:
+Reduces memory usage during training.
+model.gradient_checkpointing_enable()
+
+###3.3 Define Training Arguments
+The TrainingArguments class from transformers is used to configure the fine-tuning process. Key parameters include batch sizes, learning rate, evaluation strategy, and the number of epochs.
+from transformers import TrainingArguments
+
+args = TrainingArguments(
+    output_dir="smart_home_chatbot",  # Directory to save model checkpoints
+    overwrite_output_dir=True,
+    logging_dir="./logs",             # Directory for logs
+    logging_steps=50,                 # Log interval
+    evaluation_strategy="steps",      # Evaluate at regular intervals
+    eval_steps=500,                   # Interval for evaluation
+    save_steps=500,                   # Interval for saving checkpoints
+    save_total_limit=1,               # Retain only the latest checkpoint
+    num_train_epochs=3,               # Number of epochs
+    per_device_eval_batch_size=4,     # Evaluation batch size
+    per_device_train_batch_size=4,    # Training batch size
+    gradient_accumulation_steps=32,   # Accumulate gradients over several steps
+    learning_rate=1e-4,               # Learning rate
+    optim="adamw_8bit",               # Optimizer with 8-bit weights
+    fp16=True,                        # Use 16-bit floating-point precision
+    report_to=["tensorboard"],        # Report training metrics to TensorBoard
+    dataloader_pin_memory=True,
+    tf32=True                         # Enable TF32 on NVIDIA GPUs
+)
+
+###3.4 Initialize the Trainer and Start Fine-Tuning
+The SFTTrainer from trl (transformers reinforcement learning) is used for fine-tuning. This library is optimized for tasks like causal language modeling.
+Initialize the Trainer:
+Configure the trainer with the model, training arguments, and datasets.
+from trl import SFTTrainer
+
+trainer = SFTTrainer(
+    model=model,
+    args=args,
+    train_dataset=train_dataset,
+    max_seq_length=256,          # Maximum sequence length
+    dataset_text_field="text",   # Text field in the dataset
+    eval_dataset=eval_dataset
+)
+Train the Model:
+Start the fine-tuning process.
+trainer.train()
+
+###3.5 Monitor Training
+Logs: Training metrics such as loss and evaluation accuracy are logged in TensorBoard. Run the following command to view them:
+tensorboard --logdir=./logs
+Checkpoints: The model checkpoints are saved in the smart_home_chatbot directory.
+
+###3.6 Output
+After training, the fine-tuned model is saved and ready for deployment. The following files will be generated:
+
+adapter_model = trainer.model
+merged_model = adapter_model.merge_and_unload()
+
+trained_tokenizer = trainer.tokenizer
+
+Fine-tuned model weights in smart_home_chatbot/.
+Logs for monitoring training progress.
+The final trained model can now be used for downstream tasks like answering queries or generating responses for smart home systems.
 
 
 ##4. Combine with Retrieval-Augmented Generation (RAG) for Domain Knowledge
