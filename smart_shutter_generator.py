@@ -10,9 +10,9 @@ def random_choice(options, multi_select=False):
         return random.randint(1, len(options))
 
 
-def generate_dataset_shutter(num_samples=1, output_file="smart_home_dialogues.json"):
+def generate_dataset_shutter(num_samples):
     """Generate multiple dialogues and plan summaries based on num_samples."""
-    all_dialogues = []
+    dataset = []
 
     for _ in range(num_samples):
         spaces = []
@@ -221,10 +221,12 @@ def generate_dataset_shutter(num_samples=1, output_file="smart_home_dialogues.js
         dialogue.append({"role": "AI", "text": summary_text})
 
         # Add the dialogue to the dataset
-        all_dialogues.append(dialogue)
+        dataset.append(dialogue)
+    return dataset
 
+    
         
-
+def generate_json_shutter(num_samples, output_file):
     #check if the file already exists
     if os.path.exists(output_file):
         # Load existing data from the file
@@ -234,8 +236,9 @@ def generate_dataset_shutter(num_samples=1, output_file="smart_home_dialogues.js
         # if the file doesn't exist, initialize an empty list
         existing_data = []
 
+    dataset = generate_dataset_shutter(num_samples)
     # Add the generated conversation to the dialogue
-    existing_data.extend(all_dialogues)
+    existing_data.extend(dataset)
 
     #Save the updated dateset to the JSON file
     with open(output_file, "w") as f:
@@ -246,5 +249,5 @@ def generate_dataset_shutter(num_samples=1, output_file="smart_home_dialogues.js
 
 # Run the function with desired number of loops
 if __name__ == "__main__":
-    generate_dataset_shutter(num_samples=3, output_file="smart_home_dialogues.json")
-
+    generate_json_shutter(num_samples=1, output_file="smart_home_dialogues.json")
+    
