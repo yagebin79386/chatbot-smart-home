@@ -10,10 +10,10 @@ def random_choice(options, multi_select=False):
         return random.randint(1, len(options))
 
 
-def generate_dataset_security(num_samples, output_file):
+def generate_dataset_security(num_samples):
     """Generate dialogues with random choices."""
     dialogues = []
-    all_dialogues = []
+    dataset = []
     for _ in range(num_samples):
         summary_plan = {"Scenarios": [], "Devices": {}, "Installation Complexity": 0, "Estimated Cost": 0}
         conversation = []
@@ -27,7 +27,7 @@ def generate_dataset_security(num_samples, output_file):
             "Smart Lighting Integration",
             "Health Emergencies"
         ]
-        question = "Please select the scenarios you are interested in (choose multiple):"
+        question = "Please select the scenarios you are interested in smart security system: (choose multiple):"
         conversation.append({
             "role": "AI",
             "text": question + "\n" + "\n".join([f"{i+1}. {scenario}" for i, scenario in enumerate(scenarios)])
@@ -285,8 +285,11 @@ def generate_dataset_security(num_samples, output_file):
 
         # Add conversation to dialogues
         dialogues.extend(conversation)
-    # Add the dialogue to the all_dialogues
-    all_dialogues.append(dialogues)
+    # Add the dialogue to the dataset
+    dataset.append(dialogues)
+    return dataset
+    
+def generator_json_security(num_samples, output_file):
     #check if the file already exists
     if os.path.exists(output_file):
         # Load existing data from the file
@@ -296,8 +299,9 @@ def generate_dataset_security(num_samples, output_file):
         # if the file doesn't exist, initialize an empty list
         existing_data = []
 
+    dataset = generate_dataset_security(num_samples)
     # Add the generated conversation to the dataset
-    existing_data.extend(all_dialogues)
+    existing_data.extend(dataset)
     
     #Save the updated dateset to the JSON file
     with open(output_file, "w") as f:
@@ -308,7 +312,7 @@ def generate_dataset_security(num_samples, output_file):
 
 # Run the function
 if __name__ == "__main__":
-    generate_dataset_security(num_samples=4, output_file="smart_home_dialogues.json") 
+    generator_json_security(num_samples=1, output_file="smart_home_dialogues.json") 
     # Adjust `num_samples` for the number of dialogues generated
 
 
